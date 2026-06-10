@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YieldMind AI - 系统演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+        }
+        .subtitle {
+            font-size: 1.2rem;
+            color: #8892b0;
+            margin-bottom: 10px;
+        }
+        .version-badge {
+            display: inline-block;
+            background: linear-gradient(90deg, #00d4ff22, #7b2ff722);
+            border: 1px solid #00d4ff44;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #00d4ff;
+        }
+        .section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.15);
+        }
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .section-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #00d4ff, #7b2ff7);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        .section-title {
+            font-size: 1.8rem;
+            color: #00d4ff;
+        }
+        .section-desc {
+            font-size: 1rem;
+            color: #8892b0;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            padding: 15px 20px;
+            background: rgba(0, 212, 255, 0.05);
+            border-left: 3px solid #00d4ff;
+            border-radius: 0 8px 8px 0;
+        }
+        .screenshot-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .screenshot-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease;
+        }
+        .screenshot-container img:hover {
+            transform: scale(1.02);
+        }
+        .api-endpoint {
+            display: inline-block;
+            background: rgba(123, 47, 247, 0.2);
+            border: 1px solid #7b2ff7;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #b794f6;
+            margin: 5px 0;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .status-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .status-card .label {
+            font-size: 0.85rem;
+            color: #8892b0;
+            margin-bottom: 5px;
+        }
+        .status-card .value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+        .status-ok { color: #00ff88; }
+        .status-active { color: #00d4ff; }
+        .status-idle { color: #ffd700; }
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px;
+            color: #5a6688;
+            font-size: 0.9rem;
+        }
+        footer a {
+            color: #00d4ff;
+            text-decoration: none;
+        }
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .tech-tag {
+            background: rgba(123, 47, 247, 0.15);
+            border: 1px solid rgba(123, 47, 247, 0.3);
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: #b794f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 YieldMind AI</h1>
+            <p class="subtitle">智能收益优化系统 - 系统功能演示</p>
+            <span class="version-badge">v2.0.0 | TradeMind AI</span>
+        </header>
+
+        <!-- Section 1: Health Check -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">1</div>
+                <h2 class="section-title">🏥 系统健康检查</h2>
+            </div>
+            <div class="section-desc">
+                <p><strong>API 端点：</strong><span class="api-endpoint">GET /api/health</span></p>
+                <p>此端点展示系统的整体运行状态，包括各代理（Agent）的当前状态、核心系统组件的活跃情况，以及外部数据源的连接状态。</p>
+            </div>
+            <div class="status-grid">
+                <div class="status-card">
+                    <div class="label">系统状态</div>
+                    <div class="value status-ok">✅ OK</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">版本</div>
+                    <div class="value">v2.0.0</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">运行时间</div>
+                    <div class="value">~2.5 小时</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">CMC 数据源</div>
+                    <div class="value status-ok">已连接</div>
+                </div>
+            </div>
+            <div class="screenshot-container">
+                <img src="health.png" alt="系统健康检查 API 响应截图">
+            </div>
+        </div>
+
+        <!-- Section 2: Portfolio -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">2</div>
+                <h2 class="section-title">💼 投资组合管理</h2>
+            </div>
+            <div class="section-desc">
+                <p><strong>API 端点：</strong><span class="api-endpoint">GET /api/portfolio</span></p>
+                <p>此端点展示投资组合的完整信息，包括总资产价值、持仓明细、可用余额、盈亏状况、最近交易记录、订单队列以及交易引擎状态。</p>
+            </div>
+            <div class="status-grid">
+                <div class="status-card">
+                    <div class="label">总资产价值</div>
+                    <div class="value">$100,000</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">可用余额</div>
+                    <div class="value">$100,000</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">当前持仓</div>
+                    <div class="value">0 个</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">引擎状态</div>
+                    <div class="value status-idle">待命中</div>
+                </div>
+            </div>
+            <div class="screenshot-container">
+                <img src="portfolio.png" alt="投资组合 API 响应截图">
+            </div>
+        </div>
+
+        <!-- Section 3: Strategies -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">3</div>
+                <h2 class="section-title">📊 交易策略引擎</h2>
+            </div>
+            <div class="section-desc">
+                <p><strong>API 端点：</strong><span class="api-endpoint">GET /api/strategies</span></p>
+                <p>此端点展示系统内置的三大交易策略，每个策略包含参数配置、风险限制和绩效指标。系统支持动量策略、均值回归策略和 AI 自适应策略。</p>
+            </div>
+            <div class="status-grid">
+                <div class="status-card">
+                    <div class="label">策略数量</div>
+                    <div class="value">3 个</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">动量策略</div>
+                    <div class="value status-active">已激活</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">均值回归</div>
+                    <div class="value status-active">已激活</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">AI 自适应</div>
+                    <div class="value status-active">已激活</div>
+                </div>
+            </div>
+            <div class="screenshot-container">
+                <img src="strategies.png" alt="交易策略 API 响应截图">
+            </div>
+        </div>
+
+        <!-- Section 4: Risk Management -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">4</div>
+                <h2 class="section-title">🛡️ 风险管理系统</h2>
+            </div>
+            <div class="section-desc">
+                <p><strong>API 端点：</strong><span class="api-endpoint">GET /api/risk</span></p>
+                <p>此端点展示风险管理系统的核心配置，包括紧急停止机制、熔断器状态、每日损失限制、最大回撤控制等关键风险参数。</p>
+            </div>
+            <div class="status-grid">
+                <div class="status-card">
+                    <div class="label">紧急停止</div>
+                    <div class="value status-ok">未触发</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">熔断器</div>
+                    <div class="value status-ok">正常</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">最大回撤</div>
+                    <div class="value">15%</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">交易状态</div>
+                    <div class="value status-ok">允许交易</div>
+                </div>
+            </div>
+            <div class="screenshot-container">
+                <img src="risk.png" alt="风险管理 API 响应截图">
+            </div>
+        </div>
+
+        <!-- Section 5: Signal Fusion -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">5</div>
+                <h2 class="section-title">📡 信号融合引擎</h2>
+            </div>
+            <div class="section-desc">
+                <p><strong>API 端点：</strong><span class="api-endpoint">GET /api/signals</span></p>
+                <p>此端点展示多源信号融合系统的状态，包括各信号类型的权重配置（技术分析、情绪分析、链上数据、宏观经济、AI 预测）以及融合历史记录。</p>
+            </div>
+            <div class="status-grid">
+                <div class="status-card">
+                    <div class="label">技术分析权重</div>
+                    <div class="value">30%</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">链上数据权重</div>
+                    <div class="value">25%</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">宏观经济权重</div>
+                    <div class="value">18%</div>
+                </div>
+                <div class="status-card">
+                    <div class="label">AI 预测权重</div>
+                    <div class="value">15%</div>
+                </div>
+            </div>
+            <div class="screenshot-container">
+                <img src="signals.png" alt="信号融合 API 响应截图">
+            </div>
+        </div>
+
+        <!-- Tech Stack -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-number">⚡</div>
+                <h2 class="section-title">技术架构</h2>
+            </div>
+            <div class="tech-stack">
+                <span class="tech-tag">Node.js</span>
+                <span class="tech-tag">Fastify</span>
+                <span class="tech-tag">TypeScript</span>
+                <span class="tech-tag">多 Agent 架构</span>
+                <span class="tech-tag">信号融合引擎</span>
+                <span class="tech-tag">风险管理</span>
+                <span class="tech-tag">DCA 策略</span>
+                <span class="tech-tag">CMC 数据源</span>
+            </div>
+        </div>
+
+        <footer>
+            <p>YieldMind AI - 智能收益优化系统</p>
+            <p>演示时间：2026-06-05 | 系统运行在 <a href="http://localhost:3001">http://localhost:3001</a></p>
+        </footer>
+    </div>
+</body>
+</html>

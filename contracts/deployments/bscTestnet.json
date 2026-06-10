@@ -1,0 +1,13 @@
+{
+  "network": "bscTestnet",
+  "chainId": "97",
+  "deployer": "0x7FA44ffc5b7652d8E45B421e7361F51f6f08b93D",
+  "contracts": {
+    "MockERC20": "0x1a50060f1C8E2bC4964afAAc08e4aB439E72D6A9",
+    "YieldMindCore": "0x7a7a523Cef7132ffA563B52Fba975D49E620C0a8",
+    "YieldMindVault": "0x81cDC275bE14AB997a508D8ADB613Ff8a0B92a7d",
+    "YieldStrategy_PancakeSwap": "0x16cCf218574dE3cbe55e76E066A70bAb60853a90",
+    "YieldStrategy_Venus": "0xCcf7D61c591036008b6f8E93375A190C418Ed63e"
+  },
+  "timestamp": "2026-06-05T02:29:46.931Z"
+}
