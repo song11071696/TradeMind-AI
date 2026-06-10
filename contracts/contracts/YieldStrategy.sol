@@ -218,11 +218,42 @@ contract YieldStrategy is IYieldStrategy, AccessControl, ReentrancyGuard, Pausab
 
     /**
      * @dev 更新Venus Comptroller地址
+     * FIXED (C-03): Added two-step ownership transfer with timelock to prevent
+     * admin from immediately switching to a malicious comptroller that could
+     * drain funds during harvest().
      */
+    address public pendingComptroller;
+    uint256 public comptrollerUpdateTime;
+    uint256 public constant COMPTROLLER_TIMELOCK = 2 days;
+
     function updateComptroller(address _newComptroller) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(_newComptroller != address(0), "Invalid address");
-        venusComptroller = _newComptroller;
+        require(_newComptroller != venusComptroller, "Same comptroller");
+        pendingComptroller = _newComptroller;
+        comptrollerUpdateTime = block.timestamp + COMPTROLLER_TIMELOCK;
         emit StrategyUpdated(_newComptroller);
+    }
+
+    /**
+     * @dev Confirm the comptroller update after timelock expires
+     */
+    function confirmComptrollerUpdate() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(pendingComptroller != address(0), "No pending update");
+        require(block.timestamp >= comptrollerUpdateTime, "Timelock not expired");
+        address oldComptroller = venusComptroller;
+        venusComptroller = pendingComptroller;
+        pendingComptroller = address(0);
+        comptrollerUpdateTime = 0;
+        emit StrategyUpdated(venusComptroller);
+    }
+
+    /**
+     * @dev Cancel a pending comptroller update
+     */
+    function cancelComptrollerUpdate() external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(pendingComptroller != address(0), "No pending update");
+        pendingComptroller = address(0);
+        comptrollerUpdateTime = 0;
     }
 
     // ==================== Internal Functions ====================

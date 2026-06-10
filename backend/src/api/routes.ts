@@ -27,21 +27,37 @@ export function registerAPIRoutes(server: FastifyInstance, deps: RouteDeps): voi
 
   // ---- API Key Authentication Middleware ----
   const API_KEY = process.env.API_KEY;
-  if (!API_KEY) {
-    console.warn('[API] ⚠️  API_KEY not set — write endpoints are UNPROTECTED. Set API_KEY in .env for production.');
+  const REQUIRE_AUTH = process.env.API_AUTH_REQUIRED !== 'false'; // defaults to true
+
+  if (!API_KEY && REQUIRE_AUTH) {
+    console.error('[API] 🔴 API_KEY not set — ALL write endpoints are BLOCKED. Set API_KEY in .env to enable.');
+  } else if (!API_KEY) {
+    console.warn('[API] ⚠️  API_KEY not set and API_AUTH_REQUIRED=false — write endpoints are UNPROTECTED. NOT recommended for production.');
   }
 
   /**
    * Pre-handler hook for protected (write) routes.
    * Reads the API key from the `x-api-key` header.
+   * FIXED (C-01): When API_KEY is not set and REQUIRE_AUTH is true (default),
+   * ALL write operations are blocked instead of being allowed through.
    */
   server.addHook('onRequest', async (request, reply) => {
     // Only protect POST/PUT/PATCH/DELETE routes
     const method = request.method.toUpperCase();
     if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) return;
 
-    // Skip auth if no API_KEY configured (dev mode warning above)
-    if (!API_KEY) return;
+    // If API_KEY is not configured and auth is required (default), block all write requests
+    if (!API_KEY) {
+      if (REQUIRE_AUTH) {
+        reply.code(503).send({
+          error: 'Service Unavailable',
+          message: 'API_KEY not configured. Write endpoints are disabled for security. Set API_KEY in .env to enable.',
+        });
+        return;
+      }
+      // Only reach here if API_AUTH_REQUIRED=false (explicit opt-out)
+      return;
+    }
 
     const provided = request.headers['x-api-key'] as string | undefined;
     if (!provided || provided !== API_KEY) {
@@ -216,7 +232,16 @@ export function registerAPIRoutes(server: FastifyInstance, deps: RouteDeps): voi
     overridable: 'POST /api/risk/config to update at runtime',
   }));
 
-  server.post('/api/risk/emergency-stop/clear', async () => {
+  server.post('/api/risk/emergency-stop/clear', async (request, reply) => {
+    const body = request.body as Record<string, unknown> | undefined;
+    // H-06: Require explicit confirmation to clear emergency stop
+    if (!body || body.confirm !== true) {
+      reply.code(400).send({
+        error: 'Confirmation required',
+        message: 'Send { "confirm": true } in request body to clear emergency stop',
+      });
+      return;
+    }
     riskManager.clearEmergencyStop();
     return { status: 'ok', message: 'Emergency stop cleared' };
   });

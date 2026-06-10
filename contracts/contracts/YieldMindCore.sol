@@ -289,6 +289,9 @@ contract YieldMindCore is AccessControl, ReentrancyGuard, Pausable {
      * @notice Rebalance the portfolio based on AI recommendations
      * @dev Withdraws funds from strategies with decreased allocation,
      *      then deposits into strategies with increased allocation.
+     *      FIXED (C-02): Remove double-counting — do NOT modify totalDeposits during
+     *      rebalance. The total user deposits don't change; only allocation shifts.
+     *      Use a snapshot of totalDeposits for target calculations.
      * @param newAllocations Array of new allocations for each strategy
      */
     function rebalance(uint256[] calldata newAllocations) external onlyHarvester nonReentrant {
@@ -300,7 +303,12 @@ contract YieldMindCore is AccessControl, ReentrancyGuard, Pausable {
         }
         require(totalNewAlloc == 10000, "YieldMind: allocations must sum to 10000");
 
+        // Snapshot totalDeposits BEFORE any changes — this is the true total
+        uint256 totalDepositsSnapshot = totalDeposits;
+
         // Phase 1: Withdraw excess funds from strategies with decreased allocation
+        // Track how much was withdrawn (tokens return to this contract)
+        uint256 totalWithdrawn = 0;
         for (uint256 i = 0; i < strategyList.length; i++) {
             address strategy = strategyList[i];
             require(strategies[strategy].isActive, "YieldMind: strategy not active");
@@ -315,13 +323,15 @@ contract YieldMindCore is AccessControl, ReentrancyGuard, Pausable {
                     if (sharesToWithdraw > 0) {
                         uint256 withdrawnAmount = IYieldStrategy(strategy).withdraw(sharesToWithdraw);
                         strategies[strategy].totalDeposited -= withdrawnAmount;
-                        totalDeposits -= withdrawnAmount;
+                        totalWithdrawn += withdrawnAmount;
+                        // Do NOT decrement totalDeposits — tokens are still in this contract
                     }
                 }
             }
         }
 
         // Phase 2: Update allocations and deposit into strategies with increased allocation
+        // Use totalDepositsSnapshot for target calculations (not the mutated totalDeposits)
         for (uint256 i = 0; i < strategyList.length; i++) {
             address strategy = strategyList[i];
             uint256 oldAlloc = strategies[strategy].allocationBps;
@@ -329,8 +339,8 @@ contract YieldMindCore is AccessControl, ReentrancyGuard, Pausable {
 
             strategies[strategy].allocationBps = newAlloc;
 
-            if (newAlloc > oldAlloc && totalDeposits > 0 && strategies[strategy].isActive) {
-                uint256 targetAmount = (totalDeposits * newAlloc) / 10000;
+            if (newAlloc > oldAlloc && totalDepositsSnapshot > 0 && strategies[strategy].isActive) {
+                uint256 targetAmount = (totalDepositsSnapshot * newAlloc) / 10000;
                 uint256 currentAmount = strategies[strategy].totalDeposited;
                 if (targetAmount > currentAmount) {
                     uint256 depositAmount = targetAmount - currentAmount;
@@ -341,7 +351,7 @@ contract YieldMindCore is AccessControl, ReentrancyGuard, Pausable {
                     if (depositAmount > 0) {
                         IYieldStrategy(strategy).deposit(depositAmount);
                         strategies[strategy].totalDeposited += depositAmount;
-                        totalDeposits += depositAmount;
+                        // Do NOT increment totalDeposits — tokens just moved between strategies
                     }
                 }
             }
@@ -459,24 +469,34 @@ contract YieldMindCore is AccessControl, ReentrancyGuard, Pausable {
     /**
      * @notice Emergency withdraw all funds from a strategy
      * @param strategy Address of the strategy
+     * FIXED (C-04): Use actual withdrawn amount for accounting instead of
+     * stored totalDeposited (which may differ due to strategy losses/gains).
+     * Added safe underflow protection with proper balance checks.
      */
     function emergencyWithdraw(address strategy) external onlyGuardian {
         require(strategies[strategy].isActive, "YieldMind: strategy not active");
 
         IYieldStrategy(strategy).pause();
         uint256 balance = IYieldStrategy(strategy).balanceOf(address(this));
+        uint256 actualWithdrawn = 0;
         if (balance > 0) {
-            IYieldStrategy(strategy).withdraw(balance);
+            actualWithdrawn = IYieldStrategy(strategy).withdraw(balance);
         }
 
-        // Update state: mark strategy as inactive and update totals
-        uint256 depositedInStrategy = strategies[strategy].totalDeposited;
+        // Update state: use actual withdrawn amount, not stored totalDeposited
+        // This prevents underflow if strategy suffered losses
+        uint256 storedDeposited = strategies[strategy].totalDeposited;
         strategies[strategy].totalDeposited = 0;
         strategies[strategy].isActive = false;
-        if (depositedInStrategy <= totalDeposits) {
-            totalDeposits -= depositedInStrategy;
-        } else {
-            totalDeposits = 0;
+
+        // Safe subtraction: only reduce totalDeposits by what was actually withdrawn
+        if (actualWithdrawn > 0) {
+            uint256 accountingDelta = storedDeposited < actualWithdrawn ? storedDeposited : actualWithdrawn;
+            if (accountingDelta <= totalDeposits) {
+                totalDeposits -= accountingDelta;
+            } else {
+                totalDeposits = 0;
+            }
         }
         totalAllocatedBps -= strategies[strategy].allocationBps;
         _removeFromList(strategy);

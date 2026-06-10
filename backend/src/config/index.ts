@@ -45,5 +45,10 @@ export function validateConfig(config: TradeMindConfig): string[] {
     errors.push('MAX_DAILY_LOSS must be between 0 and 1');
   }
 
+  // H-07: Warn if API_KEY is not set (write endpoints will be blocked by default)
+  if (!process.env.API_KEY && process.env.API_AUTH_REQUIRED !== 'false') {
+    errors.push('API_KEY is not set — write API endpoints will be blocked. Set API_KEY in .env for production use.');
+  }
+
   return errors;
 }
