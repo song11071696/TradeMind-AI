@@ -1,6 +1,8 @@
-# 🧠 YieldMind
+# 🧠 YieldMind (by TradeMind-AI)
 
 > **Algorithmic DeFi Yield Optimization & Autonomous Trading System on BNB Chain**
+
+> **Repo name:** `TradeMind-AI` · **Product name:** `YieldMind`
 
 ---
 
@@ -17,7 +19,7 @@
 ---
 
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.24-363636?style=flat&logo=solidity)](https://soliditylang.org/)
-[![Hardhat](https://img.shields.io/badge/Hardhat-2.28-fff400?style=flat)](https://hardhat.org/)
+[![Hardhat](https://img.shields.io/badge/Hardhat-2.22-fff400?style=flat)](https://hardhat.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-14-000?style=flat&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178c6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -63,12 +65,12 @@ YieldMind is an **algorithmic autonomous trading system** and **DeFi yield optim
 │  │   Engine     │   │   Engine     │   │              │   │
 │  └──────┬──────┘   └──────┬───────┘   └──────────────┘   │
 │         │                  │                               │
-│  5 Signal Sources:    3 Strategies:      Modes:            │
+│  5 Signal Sources:    3 Strategies:      Modes (default=dry-run):│
 │  • Technical          • Momentum         • Dry Run         │
 │  • Sentiment          • Mean Reversion   • Live (BSC)      │
-│  • On-chain           • AI Adaptive      • PancakeSwap     │
+│  • On-chain           • Adaptive         • PancakeSwap     │
 │  • Macro                                       Router      │
-│  • AI Pattern                                                  │
+│  • Pattern                                                     │
 │         │                  │                               │
 │  ┌──────┴──────┐   ┌──────┴───────┐                       │
 │  │  Adaptive   │   │    Risk      │                       │
@@ -92,7 +94,7 @@ YieldMind is an **algorithmic autonomous trading system** and **DeFi yield optim
 ## 📁 Project Structure
 
 ```
-YieldMind/
+TradeMind-AI/
 ├── contracts/                         # Solidity smart contracts (Hardhat)
 │   ├── contracts/
 │   │   ├── YieldMindCore.sol          # Core vault contract (469 lines)
@@ -120,7 +122,7 @@ YieldMind/
 │       └── config/
 │           ├── contracts.ts           # Contract ABIs
 │           └── wagmi.ts              # Web3 config
-├── backend/                           # Autonomous AI Trading Agent (Fastify + TypeScript)
+├── backend/                           # Autonomous Trading Agent (Fastify + TypeScript)
 │   └── src/
 │       ├── index.ts                   # Main entry — wires all agents + API
 │       ├── config/index.ts            # Configuration loader & validator
@@ -169,7 +171,7 @@ YieldMind/
 │       ├── api/
 │       │   └── routes.ts              # 15+ REST API endpoints
 │       ├── scripts/
-│       │   └── register-agent.ts       # ERC-8004 agent identity registration
+│       │   └── register-agent.ts       # ERC-8004 agent identity registration (demo)
 │       └── tests/
 │           └── live-test.ts           # BSC testnet live test suite (972 lines)
 ├── docs/
@@ -198,7 +200,7 @@ YieldMind/
 
 ```bash
 git clone https://github.com/song11071696/TradeMind-AI.git
-cd YieldMind
+cd TradeMind-AI
 
 # Install contract dependencies
 cd contracts && npm install && cd ..
@@ -282,7 +284,7 @@ The first stage of the pipeline generates trading signals from 5 independent rul
 |--------------|--------|-------------|
 | **Technical** | 30% | RSI proxy, momentum (24h/7d), volume factor, volatility |
 | **Sentiment** | 12% | Volume spike detection, volume-to-marketcap ratio |
-| **On-chain** | 25% | Market cap category analysis, whale activity proxy |
+| **On-chain** | 25% | Market cap category analysis, whale activity proxy (heuristic) |
 | **Macro** | 18% | Trend regime detection (bull/bear/ranging), fear/greed proxy |
 | **Pattern** | 15% | Moving average crossovers, price momentum patterns |
 
@@ -300,7 +302,7 @@ Takes fused signals and determines optimal trade actions:
 |----------|------|----------|
 | Momentum | `momentum` | Strong directional signals, trending markets |
 | Mean Reversion | `mean_reversion` | Extreme signals, high volatility |
-| Adaptive | `ai_adaptive` | General purpose, risk-adjusted |
+| Adaptive | `adaptive` | General purpose, risk-adjusted |
 
 **Decision Process:**
 1. Score each strategy against signal characteristics
@@ -313,8 +315,9 @@ Takes fused signals and determines optimal trade actions:
 
 Executes orders on DEX venues:
 
-- **Dry Run Mode**: Simulated execution with realistic slippage and gas costs
+- **Dry Run Mode** (DEFAULT): Simulated execution with realistic slippage and gas costs — no real funds at risk
 - **Live Mode**: Real transactions via PancakeSwap Router on BSC
+- **⚠️ Live mode requires explicit opt-in** via `EXECUTION_MODE=live` in `.env`
 - **Portfolio Tracking**: Automatic position management (averaging in/out)
 - **Event Emission**: `order.filled` / `order.failed` events for downstream tracking
 
@@ -374,7 +377,7 @@ The main entry point for user deposits and strategy management (469 lines).
 | `deposit(amount)` | Deposit tokens, receive vault shares |
 | `withdraw(shares)` | Redeem shares, withdraw tokens |
 | `addStrategy(...)` | Register a new yield strategy |
-| `rebalance(allocations)` | AI-triggered portfolio rebalancing |
+| `rebalance(allocations)` | Signal-triggered portfolio rebalancing |
 | `harvest(strategy)` | Collect rewards from a strategy |
 | `pause() / unpause()` | Emergency circuit breaker |
 
@@ -385,9 +388,9 @@ The main entry point for user deposits and strategy management (469 lines).
 - ✅ SafeERC20 for all token transfers
 - 📊 BPS allocation system (10000 = 100%)
 
-### YieldStrategy.sol — Strategy Implementation
+### YieldStrategy.sol — Strategy Implementation (Demo/Simulated)
 
-Base strategy contract that interacts with underlying DeFi protocols.
+Base strategy contract (demo/simulated for hackathon) that interacts with underlying DeFi protocols.
 
 | Feature | Description |
 |---------|-------------|
@@ -517,6 +520,41 @@ Tests BSC testnet connectivity, PnL tracker, risk manager, and simulated trade e
 
 ---
 
+## ⚠️ Financial Disclaimer
+
+> **This software is for educational and hackathon demonstration purposes only.** It does NOT constitute financial advice, investment advice, trading advice, or any other sort of professional advice. You should not treat any of the content as such.
+>
+> - **No real funds** are used in the default (dry-run) mode.
+> - All smart contract deployments are on **BSC Testnet** (Chain ID 97), not mainnet.
+> - Trading strategies, signals, and PnL metrics are **simulated** and may not reflect real market conditions.
+> - Past performance (simulated or real) does not guarantee future results.
+> - **Always do your own research (DYOR)** before making any financial decisions.
+> - The developers assume no responsibility for any financial losses incurred.
+
+---
+
+## 🔑 API Authentication
+
+The backend API runs locally by default (localhost:3001). For production deployment:
+- Implement API key authentication via `API_KEY` environment variable
+- Rate limiting is built-in at the application level (5 requests/second default)
+- CORS is configured for the frontend origin
+- **Never expose your private key or API keys** — use environment variables only
+
+---
+
+## 🔒 Default Safety Mode
+
+YieldMind ships with **dry-run mode enabled by default**. In this mode:
+- All trades are **simulated locally** — no on-chain transactions occur
+- Slippage and gas costs are **estimated**, not real
+- Portfolio tracking reflects simulated PnL only
+- To enable live trading, set `EXECUTION_MODE=live` in `.env` (not recommended for production without audit)
+
+> **Strategy contracts (`YieldStrategy.sol`) are demo/simulated implementations** deployed on BSC testnet for hackathon demonstration. They do NOT represent production-ready DeFi strategies.
+
+---
+
 ## 📄 License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
@@ -572,13 +610,13 @@ CoinMarketCap API ──→ CMC Data Source (data-sources/cmc.ts)
 - **`/v1/global-metrics/quotes/latest`** — Global market metrics
 - **`/v1/cryptocurrency/info`** — Token metadata & categories
 
-> 💡 The project supports both **live CMC API** (with `CMC_API_KEY`) and a **simulation fallback** for development/testing without an API key.
+> 💡 The project supports both **live CMC API** (with `CMC_API_KEY`) and a **simulation fallback** (synthetic data generation) for development/testing without an API key. When no API key is configured, the system automatically uses simulated market data.
 
 ---
 
 ## 🆔 Agent Identity Registration (ERC-8004)
 
-YieldMind registers its AI agent on-chain using the [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) Agent Identity standard, providing verifiable on-chain provenance.
+YieldMind registers its trading agent on-chain using the [ERC-8004](https://eips.ethereum.org/EIPS/eip-8004) Agent Identity standard, providing verifiable on-chain provenance.
 
 ### Register the Agent
 

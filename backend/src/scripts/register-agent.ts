@@ -1,7 +1,7 @@
 /**
  * YieldMind — ERC-8004 Agent Identity Registration
  *
- * Registers the YieldMind AI agent on-chain via the ERC-8004
+ * Registers the YieldMind trading agent on-chain via the ERC-8004
  * Agent Identity Registry contract on BNB Chain (BSC testnet).
  *
  * This script:
@@ -47,9 +47,9 @@ const REGISTRY_ABI = parseAbi([
 // ─── Agent Identity Metadata ──────────────────────────────────
 
 const AGENT_METADATA = {
-  name: 'YieldMind AI Agent',
+  name: 'YieldMind Trading Agent',
   description:
-    'AI-powered DeFi yield optimization and autonomous trading agent on BNB Chain. ' +
+    'DeFi yield optimization and autonomous trading agent on BNB Chain. ' +
     'Features: 5-factor signal fusion, adaptive weight learning, multi-layer risk management, ' +
     'and PancakeSwap execution via smart contract vault.',
   endpoint: 'https://yieldmind-backend.onrender.com/api/health',

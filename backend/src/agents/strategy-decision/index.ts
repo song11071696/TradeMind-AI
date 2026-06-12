@@ -135,7 +135,7 @@ export class StrategyDecisionEngine {
       },
       {
         id: 'ai-adaptive-v1',
-        name: 'AI Adaptive Strategy',
+        name: 'Adaptive Strategy',
         type: 'ai_adaptive',
         isActive: true,
         parameters: {
@@ -273,7 +273,7 @@ export class StrategyDecisionEngine {
           break;
 
         case 'ai_adaptive':
-          // AI adaptive gets a base score and adjusts for risk
+          // Adaptive strategy gets a base score and adjusts for risk
           score = signal.confidence * 0.8;
           if (signal.riskAssessment.level === 'LOW' || signal.riskAssessment.level === 'MEDIUM') {
             score *= 1.1;

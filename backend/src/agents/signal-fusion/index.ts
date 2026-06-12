@@ -220,7 +220,7 @@ export class SignalFusionEngine {
         this.generateSentimentSignal(symbol, data, sentimentData),     // ✅ 独立情绪数据
         this.generateOnchainSignal(symbol, data, onchainData),         // ✅ 独立链上数据
         this.generateMacroSignal(symbol, data),                        // 宏观（保持现有）
-        this.generateAISignal(symbol, data),                           // AI（见C3修改）
+        this.generatePatternSignal(symbol, data),                      // Pattern-based heuristic
       ];
 
       // Filter out HOLD signals with low confidence
@@ -545,9 +545,9 @@ export class SignalFusionEngine {
   }
 
   /**
-   * AI-generated signal: multi-feature ML prediction
+   * Pattern-based signal: multi-feature heuristic prediction
    */
-  private generateAISignal(symbol: string, data: MarketDataPoint): TradingSignal {
+  private generatePatternSignal(symbol: string, data: MarketDataPoint): TradingSignal {
     const history = this.priceHistory.get(symbol);
 
     let type: SignalType = 'HOLD';
@@ -573,10 +573,10 @@ export class SignalFusionEngine {
         id: randomUUID(),
         symbol,
         type,
-        source: 'ai',
+        source: 'pattern',
         confidence,
         strength,
-        reasoning: `ML预测: dir=${direction.toFixed(3)}, RSI=${features.rsi?.toFixed(1)}, trend=${features.trendSlope?.toFixed(4)}, conf=${(prediction.confidence * 100).toFixed(1)}%`,
+        reasoning: `Pattern heuristic: dir=${direction.toFixed(3)}, RSI=${features.rsi?.toFixed(1)}, trend=${features.trendSlope?.toFixed(4)}, conf=${(prediction.confidence * 100).toFixed(1)}%`,
         metadata: { prediction, features },
         timestamp: Date.now(),
         ttl: 300000,
