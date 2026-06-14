@@ -195,6 +195,8 @@ async function main() {
 
 /**
  * Emit test data when CMC is unavailable
+ * ⚠️ MOCK DATA: Uses Math.random() for price noise simulation.
+ * This function is ONLY called when no CMC API key is configured.
  */
 function emitTestData(engine: SignalFusionEngine): void {
   const testSymbols = [

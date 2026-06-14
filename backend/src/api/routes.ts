@@ -28,6 +28,7 @@ export function registerAPIRoutes(server: FastifyInstance, deps: RouteDeps): voi
   // ---- API Key Authentication Middleware ----
   const API_KEY = process.env.API_KEY;
   const REQUIRE_AUTH = process.env.API_AUTH_REQUIRED !== 'false'; // defaults to true
+  const ADMIN_API_KEY = process.env.ADMIN_API_KEY;
 
   if (!API_KEY && REQUIRE_AUTH) {
     console.error('[API] 🔴 API_KEY not set — ALL write endpoints are BLOCKED. Set API_KEY in .env to enable.');
@@ -62,6 +63,34 @@ export function registerAPIRoutes(server: FastifyInstance, deps: RouteDeps): voi
     const provided = request.headers['x-api-key'] as string | undefined;
     if (!provided || provided !== API_KEY) {
       reply.code(401).send({ error: 'Unauthorized', message: 'Valid x-api-key header required' });
+      return;
+    }
+  });
+
+  // ---- Admin Authentication for Risk Endpoints ----
+  // /api/risk/* POST/PUT/DELETE endpoints require admin-level access
+  server.addHook('onRequest', async (request, reply) => {
+    const url = request.url;
+    const method = request.method.toUpperCase();
+
+    // Only protect risk mutation endpoints
+    if (!url.startsWith('/api/risk/') || !['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) return;
+
+    // Admin key required for risk mutations
+    if (!ADMIN_API_KEY) {
+      reply.code(503).send({
+        error: 'Service Unavailable',
+        message: 'ADMIN_API_KEY not configured. Risk mutation endpoints are disabled.',
+      });
+      return;
+    }
+
+    const provided = request.headers['x-api-key'] as string | undefined;
+    if (!provided || provided !== ADMIN_API_KEY) {
+      reply.code(403).send({
+        error: 'Forbidden',
+        message: 'Admin API key required for risk configuration endpoints',
+      });
       return;
     }
   });

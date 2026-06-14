@@ -225,19 +225,21 @@ export class ExecutionEngine {
 
   /**
    * Simulate order execution (dry run mode)
+   * ⚠️ MOCK DATA: Uses Math.random() for simulated slippage and gas.
+   * This is intentional for dry-run simulation only, NOT real market data.
    */
   private async simulateExecution(order: TradeOrder): Promise<ExecutionResult> {
-    // Simulate a small delay
+    // ⚠️ MOCK: Simulate a small random delay
     await new Promise((resolve) => setTimeout(resolve, 100 + Math.random() * 200));
 
-    // Simulate slippage
+    // ⚠️ MOCK: Simulate slippage with random factor
     const slippage = (Math.random() * order.slippage) / 100;
     const basePrice = order.price || this.getSimulatedPrice(order.symbol);
     const executedPrice = order.side === 'BUY'
       ? basePrice * (1 + slippage)
       : basePrice * (1 - slippage);
 
-    // Simulate gas cost
+    // ⚠️ MOCK: Simulate gas cost with random variation
     const gasUsed = 150000 + Math.floor(Math.random() * 50000);
 
     return {

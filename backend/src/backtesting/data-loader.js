@@ -211,6 +211,8 @@ class DataLoader {
 
   /**
    * Generate sample data for testing
+   * ⚠️ MOCK DATA: Uses Math.random() to generate synthetic OHLCV bars.
+   * This is intentional for backtesting sample generation only.
    */
   static generateSampleData(bars = 500, startPrice = 100, volatility = 0.02) {
     const data = [];

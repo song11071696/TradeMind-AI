@@ -182,7 +182,8 @@ export class ArbitrageStrategy {
     console.log(`[Arbitrage] ${opp.type}: ${opp.symbol} ${opp.buyVenue}→${opp.sellVenue}, spread=${opp.spreadPct.toFixed(2)}%, est=$${opp.estimatedProfit.toFixed(2)}`);
     eventBus.emit({ type: 'strategy.decision', source: 'arbitrage', timestamp: Date.now(), payload: { strategy: 'arbitrage', action: 'execute', orderId: randomUUID(), opportunity: { ...opp } } });
 
-    // Simulated execution result
+    // ⚠️ MOCK DATA: Simulated execution result using Math.random()
+    // In production, this would be replaced with real on-chain execution
     const slippage = Math.random() * cfg.maxSlippagePct;
     const ok = slippage < cfg.maxSlippagePct && Math.random() > 0.1;
     const gasCost = opp.gasCostBNB * this.bnbPrice();
