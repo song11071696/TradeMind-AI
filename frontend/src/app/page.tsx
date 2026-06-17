@@ -1,17 +1,25 @@
+import VaultInterface from '../components/VaultInterface'
+
 export default function Home() {
   return (
-    <main style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1>🧠 YieldMind</h1>
-      <p>AI-Powered DeFi Yield Optimization Platform</p>
-      <div style={{ marginTop: "2rem" }}>
-        <h2>Features</h2>
-        <ul>
-          <li>AI-driven yield strategy optimization</li>
-          <li>Multi-chain vault management</li>
-          <li>Real-time portfolio analytics</li>
-          <li>Automated risk assessment</li>
-        </ul>
-      </div>
+    <main
+      style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '2rem',
+        fontFamily: 'sans-serif',
+      }}
+    >
+      <section style={{ marginBottom: '2rem' }}>
+        <h1>YieldMind</h1>
+        <p>Autonomous DeFi yield optimization on BNB Chain testnet.</p>
+        <p style={{ marginTop: '0.75rem', color: '#9ca3af' }}>
+          Connect a wallet on BSC Testnet to inspect the live vault contract and
+          test deposit or withdrawal flows.
+        </p>
+      </section>
+
+      <VaultInterface />
     </main>
-  );
+  )
 }

@@ -9,11 +9,11 @@
     "backend"
   ],
   "scripts": {
-    "compile": "npx hardhat compile",
-    "test": "npx hardhat test",
-    "deploy:local": "npx hardhat run scripts/deploy.js --network localhost",
-    "deploy:testnet": "npx hardhat run scripts/deploy.js --network bscTestnet",
-    "node": "npx hardhat node",
+    "compile": "cd contracts && npx hardhat compile",
+    "test": "cd contracts && npx hardhat test",
+    "deploy:local": "cd contracts && npx hardhat run scripts/deploy.js --network localhost",
+    "deploy:testnet": "cd contracts && npx hardhat run scripts/deploy.js --network bscTestnet",
+    "node": "cd contracts && npx hardhat node",
     "frontend:dev": "cd frontend && npm run dev",
     "backend:dev": "cd backend && npm run dev",
     "audit": "npm audit"
